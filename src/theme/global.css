@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-input: #0f172a;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-dim: rgba(99, 102, 241, 0.15);
+  --success: #22c55e;
+  --success-dim: rgba(34, 197, 94, 0.15);
+  --danger: #ef4444;
+  --danger-dim: rgba(239, 68, 68, 0.15);
+  --warning: #f59e0b;
+  --warning-dim: rgba(245, 158, 11, 0.15);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #475569;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --font: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --tab-bar-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overscroll-behavior: none;
+}
+
+ion-app {
+  background: var(--bg-primary) !important;
+}
+
+ion-content {
+  --background: var(--bg-primary);
+  --padding-bottom: calc(var(--tab-bar-height) + 16px);
+}
+
+ion-header ion-toolbar {
+  --background: var(--bg-primary);
+  --border-color: var(--border);
+  --color: var(--text-primary);
+}
+
+ion-tab-bar {
+  --background: var(--bg-secondary);
+  --border: none;
+  border-top: 1px solid var(--border);
+  height: var(--tab-bar-height);
+}
+
+ion-tab-button {
+  --color: var(--text-tertiary);
+  --color-selected: var(--accent-light);
+  --background: transparent;
+}
+
+ion-modal {
+  --background: var(--bg-secondary);
+  --border-radius: var(--radius-xl);
+}
+
+ion-item {
+  --background: transparent;
+  --color: var(--text-primary);
+  --border-color: var(--border);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-input, ion-select, ion-textarea {
+  --background: var(--bg-input);
+  --color: var(--text-primary);
+  --placeholder-color: var(--text-tertiary);
+  --border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 12px 14px !important;
+  font-family: var(--font);
+}
+
+ion-select {
+  max-width: 100%;
+  width: 100%;
+}
+
+ion-button {
+  --border-radius: var(--radius-md);
+  --background: var(--accent);
+  --background-activated: var(--accent-light);
+  font-family: var(--font);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+ion-back-button {
+  --color: var(--text-secondary);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.amount {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.page-padding {
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--border-strong);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
