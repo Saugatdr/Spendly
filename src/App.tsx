@@ -1,5 +1,5 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, setupIonicReact } from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
+import { IonReactHashRouter } from '@ionic/react-router';
 import { homeOutline, listOutline, walletOutline, settingsOutline } from 'ionicons/icons';
 import { Redirect, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -12,7 +12,7 @@ setupIonicReact({ mode: 'ios' });
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
+    <IonReactHashRouter>
       <IonTabs>
         <IonRouterOutlet>
           <Route exact path="/dashboard" component={Dashboard} />
@@ -44,7 +44,7 @@ const App: React.FC = () => (
           </IonTabButton>
         </IonTabBar>
       </IonTabs>
-    </IonReactRouter>
+    </IonReactHashRouter>
   </IonApp>
 );
 
