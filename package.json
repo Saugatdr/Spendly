@@ -11,6 +11,10 @@
     "cap:add:android": "cap add android",
     "cap:sync": "cap sync"
   },
+  "engines": {
+  "node": "18.x",
+  "npm": "9.x"
+},
   "dependencies": {
     "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.0.0",
