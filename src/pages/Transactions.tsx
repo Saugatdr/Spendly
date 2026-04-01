@@ -82,7 +82,6 @@ const Transactions: React.FC = () => {
                       style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}
                     >
                       <div className={styles.catIcon} style={{ background: (cat?.color || '#6b7280') + '22', color: cat?.color || '#6b7280' }}>
-                        <ion-icon name={cat?.icon || 'ellipsis-horizontal'} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p className={styles.txNote}>{tx.note || cat?.name || 'Transaction'}</p>

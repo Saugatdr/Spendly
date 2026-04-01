@@ -3,6 +3,7 @@ import {
   IonButton, IonIcon, IonToast
 } from '@ionic/react';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
+
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useCategories, useSettings } from '../hooks/useStorage';
@@ -117,7 +118,6 @@ const AddTransaction: React.FC = () => {
                   onClick={() => setCategoryId(cat.id)}
                 >
                   <span className={styles.catBtnIcon} style={{ color: cat.color }}>
-                    <ion-icon name={cat.icon} />
                   </span>
                   <span className={styles.catBtnLabel}>{cat.name}</span>
                 </button>

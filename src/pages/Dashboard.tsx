@@ -66,7 +66,6 @@ const Dashboard: React.FC = () => {
                     <div key={category.id} className="card" style={{ marginBottom: 8 }}>
                       <div className={styles.budgetRow}>
                         <div className={styles.catIcon} style={{ background: category.color + '22', color: category.color }}>
-                          <ion-icon name={category.icon} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className={styles.budgetMeta}>
@@ -101,7 +100,6 @@ const Dashboard: React.FC = () => {
                   return (
                     <div key={tx.id} className={styles.txRow}>
                       <div className={styles.catIcon} style={{ background: (cat?.color || '#6b7280') + '22', color: cat?.color || '#6b7280' }}>
-                        <ion-icon name={cat?.icon || 'ellipsis-horizontal'} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p className={styles.txNote}>{tx.note || cat?.name || 'Transaction'}</p>

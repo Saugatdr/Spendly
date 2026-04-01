@@ -118,7 +118,6 @@ const Budgets: React.FC = () => {
                 <div key={cat.id} className="card" style={{ marginBottom: 8 }}>
                   <div className={styles.budgetRow}>
                     <div className={styles.catIcon} style={{ background: cat.color + '22', color: cat.color }}>
-                      <ion-icon name={cat.icon} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className={styles.budgetMeta}>
@@ -188,7 +187,7 @@ const Budgets: React.FC = () => {
                       style={selectedCatId === cat.id ? { borderColor: cat.color, background: cat.color + '22' } : {}}
                       onClick={() => setSelectedCatId(cat.id)}
                     >
-                      <span style={{ color: cat.color, fontSize: 20 }}><ion-icon name={cat.icon} /></span>
+                      <span style={{ color: cat.color, fontSize: 20 }}></span>
                       <span className={styles.catBtnLabel}>{cat.name}</span>
                     </button>
                   ))}
