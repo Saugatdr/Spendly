@@ -8,6 +8,13 @@ const KEYS = {
   SETTINGS: 'spendly_settings',
 };
 
+export const EVENTS = {
+  TRANSACTIONS: 'spendly:transactions-changed',
+  CATEGORIES: 'spendly:categories-changed',
+  BUDGETS: 'spendly:budgets-changed',
+  SETTINGS: 'spendly:settings-changed',
+};
+
 const DEFAULT_CATEGORIES: Category[] = [
   { id: 'food', name: 'Food & Dining', icon: 'restaurant', color: '#f97316' },
   { id: 'transport', name: 'Transport', icon: 'car', color: '#3b82f6' },
@@ -40,6 +47,10 @@ function save<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function emit(event: string): void {
+  window.dispatchEvent(new Event(event));
+}
+
 // Categories
 export function getCategories(): Category[] {
   const stored = load<Category[]>(KEYS.CATEGORIES, []);
@@ -52,11 +63,13 @@ export function getCategories(): Category[] {
 
 export function saveCategories(categories: Category[]): void {
   save(KEYS.CATEGORIES, categories);
+  emit(EVENTS.CATEGORIES);
 }
 
 export function deleteCategory(id: string): void {
   const categories = getCategories().filter(c => c.id !== id);
   save(KEYS.CATEGORIES, categories);
+  emit(EVENTS.CATEGORIES);
 }
 
 // Transactions
@@ -68,17 +81,20 @@ export function addTransaction(tx: Omit<Transaction, 'id' | 'createdAt'>): Trans
   const transactions = getTransactions();
   const newTx: Transaction = { ...tx, id: uuidv4(), createdAt: new Date().toISOString() };
   save(KEYS.TRANSACTIONS, [newTx, ...transactions]);
+  emit(EVENTS.TRANSACTIONS);
   return newTx;
 }
 
 export function deleteTransaction(id: string): void {
   const transactions = getTransactions().filter(t => t.id !== id);
   save(KEYS.TRANSACTIONS, transactions);
+  emit(EVENTS.TRANSACTIONS);
 }
 
 export function updateTransaction(updated: Transaction): void {
   const transactions = getTransactions().map(t => t.id === updated.id ? updated : t);
   save(KEYS.TRANSACTIONS, transactions);
+  emit(EVENTS.TRANSACTIONS);
 }
 
 // Budgets
@@ -91,6 +107,7 @@ export function setBudget(budget: Budget): void {
     b => !(b.categoryId === budget.categoryId && b.month === budget.month)
   );
   save(KEYS.BUDGETS, [...budgets, budget]);
+  emit(EVENTS.BUDGETS);
 }
 
 export function deleteBudget(categoryId: string, month: string): void {
@@ -98,6 +115,7 @@ export function deleteBudget(categoryId: string, month: string): void {
     b => !(b.categoryId === categoryId && b.month === month)
   );
   save(KEYS.BUDGETS, budgets);
+  emit(EVENTS.BUDGETS);
 }
 
 // Settings
@@ -107,7 +125,7 @@ export function getSettings(): AppSettings {
 
 export function saveSettings(settings: AppSettings): void {
   save(KEYS.SETTINGS, settings);
-  window.dispatchEvent(new Event('spendly:settings-changed'));
+  emit(EVENTS.SETTINGS);
 }
 
 // Helpers
@@ -120,32 +138,23 @@ export function getMonthTransactions(month: string): Transaction[] {
   return getTransactions().filter(t => t.date.startsWith(month));
 }
 
-export function getCategorySpend(categoryId: string, month: string): number {
-  return getMonthTransactions(month)
-    .filter(t => t.type === 'expense' && t.categoryId === categoryId)
+export function getCategorySpend(categoryId: string, month: string, txList?: Transaction[]): number {
+  const list = txList ?? getTransactions();
+  return list
+    .filter(t => t.type === 'expense' && t.categoryId === categoryId && t.date.startsWith(month))
     .reduce((sum, t) => sum + t.amount, 0);
 }
 
-export function getTotalIncome(month: string): number {
-  return getMonthTransactions(month)
-    .filter(t => t.type === 'income' || t.type === 'freelanceSalary')
+export function getTotalIncome(month: string, txList?: Transaction[]): number {
+  const list = txList ?? getTransactions();
+  return list
+    .filter(t => t.type === 'income' && t.date.startsWith(month))
     .reduce((sum, t) => sum + t.amount, 0);
 }
 
-export function getTotalFreelanceIncome(month: string): number {
-  return getMonthTransactions(month)
-    .filter(t => t.type === 'freelanceSalary')
-    .reduce((sum, t) => sum + t.amount, 0);
-}
-
-export function getFreelancePayments(month: string): Transaction[] {
-  return getMonthTransactions(month)
-    .filter(t => t.type === 'freelanceSalary')
-    .sort((a, b) => b.date.localeCompare(a.date));
-}
-
-export function getTotalExpenses(month: string): number {
-  return getMonthTransactions(month)
-    .filter(t => t.type === 'expense')
+export function getTotalExpenses(month: string, txList?: Transaction[]): number {
+  const list = txList ?? getTransactions();
+  return list
+    .filter(t => t.type === 'expense' && t.date.startsWith(month))
     .reduce((sum, t) => sum + t.amount, 0);
 }

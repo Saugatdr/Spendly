@@ -8,39 +8,38 @@ import {
   getTotalIncome,
   getTotalExpenses,
   getCategorySpend,
+  EVENTS,
 } from '../store/storage';
 import { Transaction, Category, Budget, AppSettings } from '../types';
 
+function useStorageListener<T>(fetcher: () => T, event: string): { data: T; refresh: () => void } {
+  const [data, setData] = useState<T>(fetcher);
+  const refresh = useCallback(() => setData(fetcher()), [fetcher]);
+  useEffect(() => {
+    refresh();
+    window.addEventListener(event, refresh);
+    return () => window.removeEventListener(event, refresh);
+  }, [refresh, event]);
+  return { data, refresh };
+}
+
 export function useTransactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const refresh = useCallback(() => setTransactions(getTransactions()), []);
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data: transactions, refresh } = useStorageListener(getTransactions, EVENTS.TRANSACTIONS);
   return { transactions, refresh };
 }
 
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const refresh = useCallback(() => setCategories(getCategories()), []);
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data: categories, refresh } = useStorageListener(getCategories, EVENTS.CATEGORIES);
   return { categories, refresh };
 }
 
 export function useBudgets() {
-  const [budgets, setBudgetsState] = useState<Budget[]>([]);
-  const refresh = useCallback(() => setBudgetsState(getBudgets()), []);
-  useEffect(() => { refresh(); }, [refresh]);
+  const { data: budgets, refresh } = useStorageListener(getBudgets, EVENTS.BUDGETS);
   return { budgets, refresh };
 }
 
 export function useSettings() {
-  const [settings, setSettingsState] = useState<AppSettings>(getSettings());
-  const refresh = useCallback(() => setSettingsState(getSettings()), []);
-  useEffect(() => {
-    refresh();
-    const handler = () => refresh();
-    window.addEventListener('spendly:settings-changed', handler);
-    return () => window.removeEventListener('spendly:settings-changed', handler);
-  }, [refresh]);
+  const { data: settings, refresh } = useStorageListener(getSettings, EVENTS.SETTINGS);
   return { settings, refresh };
 }
 
@@ -51,14 +50,14 @@ export function useDashboard(month?: string) {
   const { budgets } = useBudgets();
   const { settings } = useSettings();
 
-  const income = getTotalIncome(currentMonth);
-  const expenses = getTotalExpenses(currentMonth);
+  const income = getTotalIncome(currentMonth, transactions);
+  const expenses = getTotalExpenses(currentMonth, transactions);
   const balance = income - expenses;
 
   const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
 
   const categoryStats = categories.map(cat => {
-    const spent = getCategorySpend(cat.id, currentMonth);
+    const spent = getCategorySpend(cat.id, currentMonth, transactions);
     const budget = budgets.find(b => b.categoryId === cat.id && b.month === currentMonth);
     return { category: cat, spent, budget: budget?.limit };
   }).filter(s => s.spent > 0 || s.budget);
