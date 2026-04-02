@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { restoreFromIndexedDB } from './store/storage';
 
 /* Core Ionic CSS */
 import '@ionic/react/css/core.css';
@@ -16,8 +17,10 @@ import '@ionic/react/css/display.css';
 
 import './theme/global.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+restoreFromIndexedDB().finally(() => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});

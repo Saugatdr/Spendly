@@ -9,7 +9,14 @@ import { setBudget, deleteBudget, deleteCategory, addCategory, getCategorySpend,
 import styles from './Budgets.module.css';
 
 
-const COLOR_OPTIONS = ['#f97316','#3b82f6','#a855f7','#10b981','#ef4444','#f59e0b','#06b6d4','#84cc16','#22c55e','#6b7280','#ec4899','#8b5cf6','#14b8a6','#f43f5e','#0ea5e9'];
+const COLOR_OPTIONS = [
+  '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+  '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+  '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+  '#ec4899', '#f43f5e', '#fb7185', '#fb923c', '#facc15',
+  '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8',
+  '#c084fc', '#e879f9', '#f0abfc', '#6b7280', '#0f172a',
+];
 
 type ModalMode = 'budget' | 'newCategory';
 
@@ -45,18 +52,18 @@ const Budgets: React.FC = () => {
     setLimitInput('');
   };
 
-const handleSaveNewCategory = () => {
-  if (!newCatName.trim()) {
-    setToastMsg('Please enter a category name');
-    setShowToast(true);
-    return;
-  }
-  const created = addCategory({ name: newCatName.trim(), icon: 'ellipsis-horizontal', color: newCatColor });
-  refreshCategories();
-  setNewCatName('');
-  setSelectedCatId(created.id);
-  setModalMode('budget');
-};
+  const handleSaveNewCategory = () => {
+    if (!newCatName.trim()) {
+      setToastMsg('Please enter a category name');
+      setShowToast(true);
+      return;
+    }
+    const created = addCategory({ name: newCatName.trim(), icon: 'ellipsis-horizontal', color: newCatColor });
+    refreshCategories();
+    setNewCatName('');
+    setSelectedCatId(created.id);
+    setModalMode('budget');
+  };
   const handleDeleteBudget = (categoryId: string) => {
     deleteBudget(categoryId, month);
     refresh();
@@ -131,7 +138,6 @@ const handleSaveNewCategory = () => {
                 <div key={cat.id} className="card" style={{ marginBottom: 8 }}>
                   <div className={styles.budgetRow}>
                     <div className={styles.catIcon} style={{ background: cat.color + '22', color: cat.color }}>
-                      <ion-icon name={cat.icon} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className={styles.budgetMeta}>
@@ -181,10 +187,10 @@ const handleSaveNewCategory = () => {
         <IonModal ref={modal} initialBreakpoint={0.75} breakpoints={[0, 0.75, 1]}>
           <IonHeader className="ion-no-border">
             <IonToolbar style={{ '--background': 'var(--bg-secondary)' }}>
-              <IonButton  className={styles.modalCloseBtn}  slot="start" fill="clear" onClick={() => modal.current?.dismiss()}>
+              <IonButton className={styles.modalCloseBtn} slot="start" fill="clear" onClick={() => modal.current?.dismiss()}>
                 <IonIcon icon={closeOutline} style={{ color: 'var(--text-secondary)' }} />
               </IonButton>
-              <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600}}>
+              <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600 }}>
                 {modalMode === 'newCategory' ? 'New Category' : 'Set Budget'}
               </IonTitle>
               <IonButton slot="end" fill="clear" onClick={modalMode === 'newCategory' ? handleSaveNewCategory : handleSaveBudget}>
@@ -211,7 +217,7 @@ const handleSaveNewCategory = () => {
                         style={selectedCatId === cat.id ? { borderColor: cat.color, background: cat.color + '22' } : {}}
                         onClick={() => setSelectedCatId(cat.id)}
                       >
-                        <span style={{ color: cat.color, fontSize: 20 }}><ion-icon name={cat.icon} /></span>
+                        <span className={styles.catColorDot} style={{ background: cat.color }} />
                         <span className={styles.catBtnLabel}>{cat.name}</span>
                       </button>
                     ))}
@@ -229,34 +235,34 @@ const handleSaveNewCategory = () => {
                   />
                 </div>
               </div>
-           ) : (
-  <div className={styles.modalWrap}>
-    <div>
-      <p className="section-title">Name</p>
-      <input
-        className={styles.limitInput}
-        style={{ fontSize: 16 }}
-        type="text"
-        placeholder="e.g. Gym, Subscriptions…"
-        value={newCatName}
-        onChange={e => setNewCatName(e.target.value)}
-      />
-    </div>
-    <div>
-      <p className="section-title">Color</p>
-      <div className={styles.colorGrid}>
-        {COLOR_OPTIONS.map(color => (
-          <button
-            key={color}
-            className={styles.colorBtn}
-            style={{ background: color, outline: newCatColor === color ? `3px solid ${color}` : 'none', outlineOffset: 2, opacity: newCatColor === color ? 1 : 0.5 }}
-            onClick={() => setNewCatColor(color)}
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-)}
+            ) : (
+              <div className={styles.modalWrap}>
+                <div>
+                  <p className="section-title">Name</p>
+                  <input
+                    className={styles.limitInput}
+                    style={{ fontSize: 16 }}
+                    type="text"
+                    placeholder="e.g. Gym, Subscriptions…"
+                    value={newCatName}
+                    onChange={e => setNewCatName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <p className="section-title">Color</p>
+                  <div className={styles.colorGrid}>
+                    {COLOR_OPTIONS.map(color => (
+                      <button
+                        key={color}
+                        className={styles.colorBtn}
+                        style={{ background: color, outline: newCatColor === color ? `3px solid ${color}` : 'none', outlineOffset: 2, opacity: newCatColor === color ? 1 : 0.5 }}
+                        onClick={() => setNewCatColor(color)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </IonContent>
         </IonModal>
 

@@ -1,5 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Category, Transaction, Budget, AppSettings } from '../types';
+import {
+  dbPutTransaction, dbDeleteTransaction,
+  dbPutCategory, dbDeleteCategory,
+  dbGetCategories, dbGetTransactions, dbGetBudgets, dbGetSettings,
+  dbPutBudget, dbDeleteBudget, dbPutSettings
+} from './db';
 
 const KEYS = {
   TRANSACTIONS: 'spendly_transactions',
@@ -34,16 +40,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   darkMode: true,
 };
 
-function load<T>(key: string, fallback: T): T {
+function loadLS<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
+  } catch { return fallback; }
 }
 
-function save<T>(key: string, value: T): void {
+function saveLS<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
@@ -51,70 +55,81 @@ function emit(event: string): void {
   window.dispatchEvent(new Event(event));
 }
 
-// Categories
+// ─── Categories ───────────────────────────────────────────────
 export function getCategories(): Category[] {
-  const stored = load<Category[]>(KEYS.CATEGORIES, []);
+  const stored = loadLS<Category[]>(KEYS.CATEGORIES, []);
   if (stored.length === 0) {
-    save(KEYS.CATEGORIES, DEFAULT_CATEGORIES);
+    saveLS(KEYS.CATEGORIES, DEFAULT_CATEGORIES);
+    DEFAULT_CATEGORIES.forEach(c => dbPutCategory(c));
     return DEFAULT_CATEGORIES;
   }
   return stored;
 }
 
 export function saveCategories(categories: Category[]): void {
-  save(KEYS.CATEGORIES, categories);
+  saveLS(KEYS.CATEGORIES, categories);
+  categories.forEach(c => dbPutCategory(c));
   emit(EVENTS.CATEGORIES);
 }
 
 export function addCategory(category: Omit<Category, 'id'>): Category {
   const categories = getCategories();
   const newCat: Category = { ...category, id: uuidv4() };
-  save(KEYS.CATEGORIES, [...categories, newCat]);
+  const updated = [...categories, newCat];
+  saveLS(KEYS.CATEGORIES, updated);
+  dbPutCategory(newCat);
   emit(EVENTS.CATEGORIES);
   return newCat;
 }
 
 export function deleteCategory(id: string): void {
   const categories = getCategories().filter(c => c.id !== id);
-  save(KEYS.CATEGORIES, categories);
+  saveLS(KEYS.CATEGORIES, categories);
+  dbDeleteCategory(id);
   emit(EVENTS.CATEGORIES);
 }
 
-// Transactions
+// ─── Transactions ─────────────────────────────────────────────
 export function getTransactions(): Transaction[] {
-  return load<Transaction[]>(KEYS.TRANSACTIONS, []);
+  return loadLS<Transaction[]>(KEYS.TRANSACTIONS, []);
 }
 
 export function addTransaction(tx: Omit<Transaction, 'id' | 'createdAt'>): Transaction {
   const transactions = getTransactions();
   const newTx: Transaction = { ...tx, id: uuidv4(), createdAt: new Date().toISOString() };
-  save(KEYS.TRANSACTIONS, [newTx, ...transactions]);
+  const updated = [newTx, ...transactions];
+  saveLS(KEYS.TRANSACTIONS, updated);
+  dbPutTransaction(newTx);
   emit(EVENTS.TRANSACTIONS);
   return newTx;
 }
 
 export function deleteTransaction(id: string): void {
   const transactions = getTransactions().filter(t => t.id !== id);
-  save(KEYS.TRANSACTIONS, transactions);
+  saveLS(KEYS.TRANSACTIONS, transactions);
+  dbDeleteTransaction(id);
   emit(EVENTS.TRANSACTIONS);
 }
 
 export function updateTransaction(updated: Transaction): void {
   const transactions = getTransactions().map(t => t.id === updated.id ? updated : t);
-  save(KEYS.TRANSACTIONS, transactions);
+  saveLS(KEYS.TRANSACTIONS, transactions);
+  dbPutTransaction(updated);
   emit(EVENTS.TRANSACTIONS);
 }
 
-// Budgets
+// ─── Budgets ──────────────────────────────────────────────────
 export function getBudgets(): Budget[] {
-  return load<Budget[]>(KEYS.BUDGETS, []);
+  return loadLS<Budget[]>(KEYS.BUDGETS, []);
 }
 
 export function setBudget(budget: Budget): void {
   const budgets = getBudgets().filter(
     b => !(b.categoryId === budget.categoryId && b.month === budget.month)
   );
-  save(KEYS.BUDGETS, [...budgets, budget]);
+  const updated = [...budgets, budget];
+  saveLS(KEYS.BUDGETS, updated);
+  dbPutBudget(budget);
   emit(EVENTS.BUDGETS);
 }
 
@@ -122,21 +137,23 @@ export function deleteBudget(categoryId: string, month: string): void {
   const budgets = getBudgets().filter(
     b => !(b.categoryId === categoryId && b.month === month)
   );
-  save(KEYS.BUDGETS, budgets);
+  saveLS(KEYS.BUDGETS, budgets);
+  dbDeleteBudget(categoryId, month);
   emit(EVENTS.BUDGETS);
 }
 
-// Settings
+// ─── Settings ─────────────────────────────────────────────────
 export function getSettings(): AppSettings {
-  return load<AppSettings>(KEYS.SETTINGS, DEFAULT_SETTINGS);
+  return loadLS<AppSettings>(KEYS.SETTINGS, DEFAULT_SETTINGS);
 }
 
 export function saveSettings(settings: AppSettings): void {
-  save(KEYS.SETTINGS, settings);
+  saveLS(KEYS.SETTINGS, settings);
+  dbPutSettings(settings);
   emit(EVENTS.SETTINGS);
 }
 
-// Helpers
+// ─── Helpers ──────────────────────────────────────────────────
 export function getCurrentMonth(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -165,4 +182,25 @@ export function getTotalExpenses(month: string, txList?: Transaction[]): number 
   return list
     .filter(t => t.type === 'expense' && t.date.startsWith(month))
     .reduce((sum, t) => sum + t.amount, 0);
+}
+
+// ─── IndexedDB restore on cold start ─────────────────────────
+// If localStorage is empty (e.g. cleared by browser), restore from IndexedDB
+export async function restoreFromIndexedDB(): Promise<void> {
+  const hasTransactions = localStorage.getItem(KEYS.TRANSACTIONS);
+  const hasCategories = localStorage.getItem(KEYS.CATEGORIES);
+  const hasBudgets = localStorage.getItem(KEYS.BUDGETS);
+  const hasSettings = localStorage.getItem(KEYS.SETTINGS);
+
+  const [txs, cats, budgets, settings] = await Promise.all([
+    hasTransactions ? null : dbGetTransactions(),
+    hasCategories ? null : dbGetCategories(),
+    hasBudgets ? null : dbGetBudgets(),
+    hasSettings ? null : dbGetSettings(),
+  ]);
+
+  if (txs?.length) saveLS(KEYS.TRANSACTIONS, txs);
+  if (cats?.length) saveLS(KEYS.CATEGORIES, cats);
+  if (budgets?.length) saveLS(KEYS.BUDGETS, budgets);
+  if (settings) saveLS(KEYS.SETTINGS, settings);
 }

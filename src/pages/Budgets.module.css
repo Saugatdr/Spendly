@@ -116,15 +116,16 @@
 }
 
 .catBtn {
-  display: flex;
-  flex-direction: column;
+ display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 5px;
-  padding: 10px 6px;
+  gap: 7px;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--bg-primary);
   cursor: pointer;
+  text-align: left;
 }
 
 .catBtnActive {}
@@ -217,6 +218,15 @@
   border: 2px solid transparent;
   cursor: pointer;
   transition: opacity 0.15s, outline 0.15s;
+  display: block;
+  flex-shrink: 0;
+}
+
+.catColorDot {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  border-radius: 50%;
   display: block;
   flex-shrink: 0;
 }
