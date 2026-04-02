@@ -5,8 +5,13 @@ import {
 import { addOutline, closeOutline, checkmarkOutline, trashOutline } from 'ionicons/icons';
 import { useState, useRef } from 'react';
 import { useCategories, useBudgets, useSettings } from '../hooks/useStorage';
-import { setBudget, deleteBudget, deleteCategory, getCategorySpend, getCurrentMonth } from '../store/storage';
+import { setBudget, deleteBudget, deleteCategory, addCategory, getCategorySpend, getCurrentMonth } from '../store/storage';
 import styles from './Budgets.module.css';
+
+
+const COLOR_OPTIONS = ['#f97316','#3b82f6','#a855f7','#10b981','#ef4444','#f59e0b','#06b6d4','#84cc16','#22c55e','#6b7280','#ec4899','#8b5cf6','#14b8a6','#f43f5e','#0ea5e9'];
+
+type ModalMode = 'budget' | 'newCategory';
 
 const Budgets: React.FC = () => {
   const { categories, refresh: refreshCategories } = useCategories();
@@ -16,8 +21,11 @@ const Budgets: React.FC = () => {
   const month = getCurrentMonth();
   const modal = useRef<HTMLIonModalElement>(null);
 
-  const [selectedCatId, setSelectedCatId] = useState('food');
+  const [modalMode, setModalMode] = useState<ModalMode>('budget');
+  const [selectedCatId, setSelectedCatId] = useState('');
   const [limitInput, setLimitInput] = useState('');
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#6366f1');
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [deletingCatId, setDeletingCatId] = useState<string | null>(null);
@@ -37,6 +45,18 @@ const Budgets: React.FC = () => {
     setLimitInput('');
   };
 
+const handleSaveNewCategory = () => {
+  if (!newCatName.trim()) {
+    setToastMsg('Please enter a category name');
+    setShowToast(true);
+    return;
+  }
+  const created = addCategory({ name: newCatName.trim(), icon: 'ellipsis-horizontal', color: newCatColor });
+  refreshCategories();
+  setNewCatName('');
+  setSelectedCatId(created.id);
+  setModalMode('budget');
+};
   const handleDeleteBudget = (categoryId: string) => {
     deleteBudget(categoryId, month);
     refresh();
@@ -46,21 +66,14 @@ const Budgets: React.FC = () => {
     if (!deletingCatId) return;
     deleteBudget(deletingCatId, month);
     deleteCategory(deletingCatId);
-    refresh();
-    refreshCategories();
     setDeletingCatId(null);
   };
 
   const openModal = (catId?: string) => {
-    const firstCat = expenseCategories[0]?.id || 'food';
-    if (catId) {
-      setSelectedCatId(catId);
-      const existing = budgets.find(b => b.categoryId === catId && b.month === month);
-      setLimitInput(existing ? String(existing.limit) : '');
-    } else {
-      setSelectedCatId(firstCat);
-      setLimitInput('');
-    }
+    setModalMode('budget');
+    setSelectedCatId(catId || expenseCategories[0]?.id || '');
+    const existing = catId ? budgets.find(b => b.categoryId === catId && b.month === month) : undefined;
+    setLimitInput(existing ? String(existing.limit) : '');
     modal.current?.present();
   };
 
@@ -118,6 +131,7 @@ const Budgets: React.FC = () => {
                 <div key={cat.id} className="card" style={{ marginBottom: 8 }}>
                   <div className={styles.budgetRow}>
                     <div className={styles.catIcon} style={{ background: cat.color + '22', color: cat.color }}>
+                      <ion-icon name={cat.icon} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className={styles.budgetMeta}>
@@ -163,48 +177,86 @@ const Budgets: React.FC = () => {
           </div>
         </div>
 
-        <IonModal ref={modal} initialBreakpoint={0.5} breakpoints={[0, 0.5, 0.75]}>
+        {/* Set Budget / New Category Modal */}
+        <IonModal ref={modal} initialBreakpoint={0.75} breakpoints={[0, 0.75, 1]}>
           <IonHeader className="ion-no-border">
             <IonToolbar style={{ '--background': 'var(--bg-secondary)' }}>
-              <IonButton slot="start" fill="clear" onClick={() => modal.current?.dismiss()}>
+              <IonButton  className={styles.modalCloseBtn}  slot="start" fill="clear" onClick={() => modal.current?.dismiss()}>
                 <IonIcon icon={closeOutline} style={{ color: 'var(--text-secondary)' }} />
               </IonButton>
-              <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600 }}>Set Budget</IonTitle>
-              <IonButton slot="end" fill="clear" onClick={handleSaveBudget}>
+              <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600}}>
+                {modalMode === 'newCategory' ? 'New Category' : 'Set Budget'}
+              </IonTitle>
+              <IonButton slot="end" fill="clear" onClick={modalMode === 'newCategory' ? handleSaveNewCategory : handleSaveBudget}>
                 <IonIcon icon={checkmarkOutline} style={{ color: 'var(--accent-light)' }} />
               </IonButton>
             </IonToolbar>
           </IonHeader>
+
           <IonContent style={{ '--background': 'var(--bg-secondary)' }}>
-            <div className={styles.modalWrap}>
-              <div>
-                <p className="section-title">Category</p>
-                <div className={styles.categoryGrid}>
-                  {expenseCategories.map(cat => (
-                    <button
-                      key={cat.id}
-                      className={`${styles.catBtn} ${selectedCatId === cat.id ? styles.catBtnActive : ''}`}
-                      style={selectedCatId === cat.id ? { borderColor: cat.color, background: cat.color + '22' } : {}}
-                      onClick={() => setSelectedCatId(cat.id)}
-                    >
-                      <span style={{ color: cat.color, fontSize: 20 }}></span>
-                      <span className={styles.catBtnLabel}>{cat.name}</span>
+            {modalMode === 'budget' ? (
+              <div className={styles.modalWrap}>
+                <div>
+                  <div className={styles.modalSectionHeader}>
+                    <p className="section-title" style={{ marginBottom: 0 }}>Category</p>
+                    <button className={styles.newCatBtn} onClick={() => setModalMode('newCategory')}>
+                      <IonIcon icon={addOutline} style={{ fontSize: 13 }} /> New
                     </button>
-                  ))}
+                  </div>
+                  <div className={styles.categoryGrid} style={{ marginTop: 10 }}>
+                    {expenseCategories.map(cat => (
+                      <button
+                        key={cat.id}
+                        className={`${styles.catBtn} ${selectedCatId === cat.id ? styles.catBtnActive : ''}`}
+                        style={selectedCatId === cat.id ? { borderColor: cat.color, background: cat.color + '22' } : {}}
+                        onClick={() => setSelectedCatId(cat.id)}
+                      >
+                        <span style={{ color: cat.color, fontSize: 20 }}><ion-icon name={cat.icon} /></span>
+                        <span className={styles.catBtnLabel}>{cat.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="section-title">Monthly limit</p>
+                  <input
+                    className={styles.limitInput}
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={limitInput}
+                    onChange={e => setLimitInput(e.target.value)}
+                  />
                 </div>
               </div>
-              <div>
-                <p className="section-title">Monthly limit</p>
-                <input
-                  className={styles.limitInput}
-                  type="number"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={limitInput}
-                  onChange={e => setLimitInput(e.target.value)}
-                />
-              </div>
-            </div>
+           ) : (
+  <div className={styles.modalWrap}>
+    <div>
+      <p className="section-title">Name</p>
+      <input
+        className={styles.limitInput}
+        style={{ fontSize: 16 }}
+        type="text"
+        placeholder="e.g. Gym, Subscriptions…"
+        value={newCatName}
+        onChange={e => setNewCatName(e.target.value)}
+      />
+    </div>
+    <div>
+      <p className="section-title">Color</p>
+      <div className={styles.colorGrid}>
+        {COLOR_OPTIONS.map(color => (
+          <button
+            key={color}
+            className={styles.colorBtn}
+            style={{ background: color, outline: newCatColor === color ? `3px solid ${color}` : 'none', outlineOffset: 2, opacity: newCatColor === color ? 1 : 0.5 }}
+            onClick={() => setNewCatColor(color)}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+)}
           </IonContent>
         </IonModal>
 

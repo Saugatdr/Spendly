@@ -49,10 +49,10 @@ const AddTransaction: React.FC = () => {
     <IonPage>
       <IonHeader className="ion-no-border">
         <IonToolbar>
-          <IonButton slot="start" fill="clear" onClick={() => history.goBack()}>
+          <IonButton className={styles.modalCloseBtn} slot="start" fill="clear" onClick={() => history.goBack()}>
             <IonIcon icon={closeOutline} style={{ color: 'var(--text-secondary)', fontSize: 24 }} />
           </IonButton>
-          <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600, letterSpacing: '-0.02em', display: 'inline' }}>
+          <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600}}>
             Add Transaction
           </IonTitle>
           <IonButton slot="end" fill="clear" onClick={handleSave}>

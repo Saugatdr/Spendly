@@ -66,6 +66,14 @@ export function saveCategories(categories: Category[]): void {
   emit(EVENTS.CATEGORIES);
 }
 
+export function addCategory(category: Omit<Category, 'id'>): Category {
+  const categories = getCategories();
+  const newCat: Category = { ...category, id: uuidv4() };
+  save(KEYS.CATEGORIES, [...categories, newCat]);
+  emit(EVENTS.CATEGORIES);
+  return newCat;
+}
+
 export function deleteCategory(id: string): void {
   const categories = getCategories().filter(c => c.id !== id);
   save(KEYS.CATEGORIES, categories);

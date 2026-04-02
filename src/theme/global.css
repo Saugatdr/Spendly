@@ -112,6 +112,15 @@ ion-back-button {
   --color: var(--text-secondary);
 }
 
+/* Prevent iOS PWA zoom on input focus */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+button, a, ion-fab-button {
+  touch-action: manipulation;
+}
+
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);

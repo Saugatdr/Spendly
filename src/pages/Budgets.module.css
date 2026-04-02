@@ -157,3 +157,71 @@
 .limitInput::placeholder {
   color: var(--text-tertiary);
 }
+
+.modalSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.newCatBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-light);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.iconGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.iconPickerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  cursor: pointer;
+}
+
+.iconPickerBtnActive {
+  border-width: 1.5px;
+}
+
+.colorGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 0;
+  align-items: center;
+}
+
+.colorBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s, outline 0.15s;
+  display: block;
+  flex-shrink: 0;
+}
+
+.modalCloseBtn {
+  z-index: 10;       
+  pointer-events: auto; /* ensure clickable */
+}
