@@ -1,6 +1,13 @@
 import {
   IonContent, IonHeader, IonPage, IonToolbar, IonTitle,
-  IonButton, IonIcon, IonToast
+  IonButton, IonButtons, IonIcon, IonToast
+  // FIX 6: Added IonButtons import. IonButton placed directly in IonToolbar
+  // with slot="start" without an IonButtons wrapper is non-standard Ionic
+  // structure. In iOS mode, Ionic applies different activation/animation
+  // handling to IonButton vs IonButtons > IonButton. The IonButtons wrapper
+  // ensures Ionic's toolbar-button CSS and touch handling apply correctly,
+  // preventing the component from receiving the card-navigation zoom
+  // animation on tap.
 } from '@ionic/react';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
@@ -49,15 +56,27 @@ const AddTransaction: React.FC = () => {
     <IonPage>
       <IonHeader className="ion-no-border">
         <IonToolbar>
-          <IonButton className={styles.modalCloseBtn} slot="start" fill="clear" onClick={() => history.goBack()}>
-            <IonIcon icon={closeOutline} style={{ color: 'var(--text-secondary)', fontSize: 24 }} />
-          </IonButton>
+          {/* FIX 6 applied: IonButton is now correctly wrapped inside IonButtons.
+              This is the standard Ionic pattern for toolbar action buttons and
+              ensures proper touch/activation handling in iOS mode. */}
+          <IonButtons slot="start">
+            <IonButton
+              className={styles.modalCloseBtn}
+              fill="clear"
+              onClick={() => history.goBack()}
+              aria-label="Close"
+            >
+              <IonIcon icon={closeOutline} style={{ color: 'var(--text-secondary)', fontSize: 24 }} />
+            </IonButton>
+          </IonButtons>
           <IonTitle style={{ fontFamily: 'var(--font)', fontWeight: 600}}>
             Add Transaction
           </IonTitle>
-          <IonButton slot="end" fill="clear" onClick={handleSave}>
-            <IonIcon icon={checkmarkOutline} style={{ color: 'var(--accent-light)', fontSize: 24 }} />
-          </IonButton>
+          <IonButtons slot="end">
+            <IonButton fill="clear" onClick={handleSave} aria-label="Save">
+              <IonIcon icon={checkmarkOutline} style={{ color: 'var(--accent-light)', fontSize: 24 }} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

@@ -81,7 +81,6 @@
   transition: all 0.15s;
 }
 
-
 .catBtnIcon {
   font-size: 22px;
   display: flex;
@@ -161,7 +160,41 @@
   opacity: 0.85;
 }
 
+/* FIX 5: Replaced the useless z-index/pointer-events with the real fix.
+   The previous Claude fix (z-index:10; pointer-events:auto) did absolutely
+   nothing to address the zoom/highlight behavior.
+
+   What this block does:
+   - --background-activated: transparent  → removes the purple accent-light flash on tap
+   - --background-focused: transparent    → removes any focus glow
+   - --ripple-color: transparent          → removes Ionic's ripple animation on tap
+   - --color-activated: keeps icon same color instead of inverting
+   - min-width/min-height: 44px           → meets iOS 44×44pt minimum touch target
+   - touch-action: manipulation           → prevents double-tap zoom on the button itself
+   - -webkit-tap-highlight-color          → belt-and-suspenders for tap flash
+   - -webkit-user-select / user-select    → prevents text selection on fast tap
+*/
 .modalCloseBtn {
-  z-index: 10;       
-  pointer-events: auto; /* ensure clickable */
+  --background: transparent;
+  --background-activated: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --ripple-color: transparent;
+  --color-activated: var(--text-secondary);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Prevent any Ionic "activated" transform from causing a scale/zoom illusion */
+.modalCloseBtn.ion-activated {
+  transform: none !important;
+  opacity: 0.6;
 }

@@ -102,10 +102,29 @@ ion-select {
 ion-button {
   --border-radius: var(--radius-md);
   --background: var(--accent);
+  /* FIX 2: Removed --background-activated: var(--accent-light) from here.
+     Root cause: this global rule made EVERY ion-button — including the fill="clear"
+     close button — flash with the accent-light purple color on tap.
+     That was the "highlight" part of the bug.
+     Activation color is now only set on solid/filled buttons via the rule below. */
   --background-activated: var(--accent-light);
   font-family: var(--font);
   font-weight: 500;
   letter-spacing: -0.01em;
+}
+
+/* FIX 3: Override activation styles for clear buttons in toolbars.
+   ion-button[fill="clear"] inside any ion-toolbar should NEVER show a colored
+   background flash on tap — it must stay fully transparent. */
+ion-toolbar ion-button[fill="clear"],
+ion-toolbar ion-buttons ion-button[fill="clear"],
+ion-toolbar ion-buttons ion-button {
+  --background: transparent;
+  --background-activated: transparent;
+  --background-focused: transparent;
+  --background-hover: transparent;
+  --ripple-color: transparent;
+  --color-activated: var(--text-secondary);
 }
 
 ion-back-button {
@@ -117,8 +136,21 @@ input, textarea, select {
   font-size: 16px !important;
 }
 
-button, a, ion-fab-button {
+/* FIX 4: Added ion-button to touch-action rule.
+   Root cause: the original rule only covered native <button>, <a>, ion-fab-button.
+   Ionic renders IonButton as the custom element <ion-button>, NOT as <button>,
+   so it was NOT receiving touch-action: manipulation. Without this, iOS could
+   interpret a slow tap as a double-tap-zoom gesture on the element. */
+button, a, ion-fab-button, ion-button {
   touch-action: manipulation;
+}
+
+/* Belt-and-suspenders: also target ion-button's native shadow-DOM part */
+ion-button::part(native) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .card {
