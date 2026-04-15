@@ -1,4 +1,4 @@
-# Spendly — Budget Tracker MVP
+# Spendly — Expenses Tracker MVP
 
 A mobile-first PWA budgeting app built with React, Ionic, and Capacitor.
 
